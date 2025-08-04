@@ -266,14 +266,17 @@ int Save_NDfield(NDfield *field,const char *filename)
   FILE *f;
 
   char dims_msg[255];
-  sprintf(dims_msg,"[%d",field->dims[0]);
-  for (i=1;i<field->n_dims;i++) sprintf(dims_msg,"%s,%d",dims_msg,field->dims[i]);
-  sprintf(dims_msg,"%s]",dims_msg);
+  int offset = snprintf(dims_msg, sizeof(dims_msg), "[%d", field->dims[0]);
+  for (i = 1; i < field->n_dims && offset < (int)sizeof(dims_msg); i++)
+    offset += snprintf(dims_msg + offset, sizeof(dims_msg) - offset, ",%d", field->dims[i]);
+  snprintf(dims_msg + offset, sizeof(dims_msg) - offset, "]");
   
   char msg[255];
   print_dataType(msg,field->datatype);
-  if (field->fdims_index!=0) sprintf(msg,"%s coords",msg);
-  else sprintf(msg,"%s array",msg);
+  if (field->fdims_index!=0)
+    snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " coords");
+  else
+    snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " array");
   printf ("Saving %s %s to file %s ...",dims_msg,msg,filename);
   fflush(0);
 
@@ -1131,14 +1134,17 @@ NDfield *Load_NDfield(const char *filename)
   field = Create_NDfield(dims,ndims,fdims_index,datatype,x0,delta,NULL,comment);
   
   char dims_msg[255];
-  sprintf(dims_msg,"[%d",dims[0]);
-  for (i=1;i<field->n_dims;i++) sprintf(dims_msg,"%s,%d",dims_msg,dims[i]);
-  sprintf(dims_msg,"%s]",dims_msg);
-  
+  int offset = snprintf(dims_msg, sizeof(dims_msg), "[%d", dims[0]);
+  for (i = 1; i < field->n_dims && offset < (int)sizeof(dims_msg); i++)
+    offset += snprintf(dims_msg + offset, sizeof(dims_msg) - offset, ",%d", dims[i]);
+  snprintf(dims_msg + offset, sizeof(dims_msg) - offset, "]");
+
   char msg[255];
   print_dataType(msg,datatype);
-  if (fdims_index!=0) sprintf(msg,"%s coords",msg);
-  else sprintf(msg,"%s array",msg);
+  if (fdims_index!=0)
+    snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " coords");
+  else
+    snprintf(msg + strlen(msg), sizeof(msg) - strlen(msg), " array");
   printf ("Loading %s %s from file %s ...",dims_msg,msg,filename);
   fflush(0);
 

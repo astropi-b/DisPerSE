@@ -49,6 +49,7 @@
 
 #include <string>
 #include <limits>
+#include <cstdio>
 
 #include "NDfield.h"
 #include "NDfield_VTK_IO.h"
@@ -212,9 +213,10 @@ namespace ndfield {
 	}
       
       char dimstr[256];
-      sprintf(dimstr,"[%d",dims[0]);
-      for (i=1;i<(long)dims.size();i++) sprintf(dimstr,"%s,%d",dimstr,dims[i]);
-      strcat(dimstr,"]");
+      int offset = snprintf(dimstr, sizeof(dimstr), "[%d", dims[0]);
+      for (i = 1; i < (long)dims.size() && offset < (int)sizeof(dimstr); i++)
+        offset += snprintf(dimstr + offset, sizeof(dimstr) - offset, ",%d", dims[i]);
+      snprintf(dimstr + offset, sizeof(dimstr) - offset, "]");
       if (verbose>=1) printf("Reading %s %s from NDfied ASCII file '%s' ... ",dimstr,coord?"coords":"grid",fname.c_str());
       fflush(0);
       
